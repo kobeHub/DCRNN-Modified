@@ -91,21 +91,25 @@ class DCGRUCell(RNNCell):
                     fn = self._gconv
                 else:
                     fn = self._fc
+                # print(f"gate: inputs: {inputs.shape}, {state.shape}, {output_size}")
                 value = tf.nn.sigmoid(fn(inputs, state, output_size, bias_start=1.0))
                 value = tf.reshape(value, (-1, self._num_nodes, output_size))
                 r, u = tf.split(value=value, num_or_size_splits=2, axis=-1)
                 r = tf.reshape(r, (-1, self._num_nodes * self._num_units))
                 u = tf.reshape(u, (-1, self._num_nodes * self._num_units))
             with tf.variable_scope("candidate"):
+                state = tf.cast(state, dtype=tf.float64)
+                # print(f"Gconv: input: {inputs.dtype}, r: {r.dtype}, state: {state.dtype}")
                 c = self._gconv(inputs, r * state, self._num_units)
                 if self._activation is not None:
                     c = self._activation(c)
             output = new_state = u * state + (1 - u) * c
             if self._num_proj is not None:
                 with tf.variable_scope("projection"):
-                    w = tf.get_variable('w', shape=(self._num_units, self._num_proj))
+                    w = tf.get_variable('w', shape=(self._num_units, self._num_proj), dtype=tf.float64)
                     batch_size = inputs.get_shape()[0].value
                     output = tf.reshape(new_state, shape=(-1, self._num_units))
+                    # print(f"pro: output: {output.dtype}, w: {w.dtype}")
                     output = tf.reshape(tf.matmul(output, w), shape=(batch_size, self.output_size))
         return output, new_state
 
@@ -142,8 +146,13 @@ class DCGRUCell(RNNCell):
         """
         # Reshape input and state to (batch_size, num_nodes, input_dim/state_dim)
         batch_size = inputs.get_shape()[0].value
+        # if inputs.shape 
+        # print(f"input type: {inputs}, shape: {inputs.get_shape()}")
         inputs = tf.reshape(inputs, (batch_size, self._num_nodes, -1))
         state = tf.reshape(state, (batch_size, self._num_nodes, -1))
+        inputs = tf.cast(inputs, dtype=tf.float64)
+        state = tf.cast(state, dtype=tf.float64)
+        # print(f"input: {inputs.dtype}, state: {state.dtype}")
         inputs_and_state = tf.concat([inputs, state], axis=2)
         input_size = inputs_and_state.get_shape()[2].value
         dtype = inputs.dtype

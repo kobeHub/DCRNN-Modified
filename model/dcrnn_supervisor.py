@@ -57,8 +57,8 @@ class DCRNNSupervisor(object):
 
         # Learning rate.
         self._lr = tf.get_variable('learning_rate', shape=(), initializer=tf.constant_initializer(0.01),
-                                   trainable=False)
-        self._new_lr = tf.placeholder(tf.float32, shape=(), name='new_learning_rate')
+                                   trainable=False, dtype=tf.float64)
+        self._new_lr = tf.placeholder(tf.float64, shape=(), name='new_learning_rate')
         self._lr_update = tf.assign(self._lr, self._new_lr, name='lr_update')
 
         # Configure optimizer
@@ -79,6 +79,8 @@ class DCRNNSupervisor(object):
         self._loss_fn = masked_mae_loss(scaler, null_val)
         self._train_loss = self._loss_fn(preds=preds, labels=labels)
 
+
+        # tvars = [tf.cast(var, tf.float64) if var.dtype != tf.float64 else var for var in ]
         tvars = tf.trainable_variables()
         grads = tf.gradients(self._train_loss, tvars)
         max_grad_norm = kwargs['train'].get('max_grad_norm', 1.)

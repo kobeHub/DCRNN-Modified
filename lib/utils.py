@@ -7,6 +7,7 @@ import sys
 import tensorflow as tf
 
 from scipy.sparse import linalg
+import pandas as pd
 
 
 class DataLoader(object):
@@ -210,3 +211,8 @@ def load_pickle(pickle_file):
         print('Unable to load data ', pickle_file, ':', e)
         raise
     return pickle_data
+
+def load_graph_struct(filename):
+    df = pd.read_csv(filename, header=None)
+    print(f"Load shape: {df.shape}")
+    return df

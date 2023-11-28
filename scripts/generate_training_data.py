@@ -54,7 +54,10 @@ def generate_graph_seq2seq_io_data(
 
 
 def generate_train_val_test(args):
-    df = pd.read_hdf(args.traffic_df_filename)
+    if args.traffic_file.endswith(".h5"):
+        df = pd.read_hdf(args.traffic_file)
+    else:
+        df = pd.read_csv(args.traffic_file, header=None)
     # 0 is the latest observed sample.
     x_offsets = np.sort(
         # np.concatenate(([-week_size + 1, -day_size + 1], np.arange(-11, 1, 1)))
@@ -68,7 +71,7 @@ def generate_train_val_test(args):
         df,
         x_offsets=x_offsets,
         y_offsets=y_offsets,
-        add_time_in_day=True,
+        add_time_in_day=False,
         add_day_in_week=False,
     )
 
@@ -114,9 +117,9 @@ if __name__ == "__main__":
         "--output_dir", type=str, default="data/", help="Output directory."
     )
     parser.add_argument(
-        "--traffic_df_filename",
+        "--traffic_file",
         type=str,
-        default="data/metr-la.h5",
+        default="dataset/PeMSD7_V_228.csv",
         help="Raw traffic readings.",
     )
     args = parser.parse_args()

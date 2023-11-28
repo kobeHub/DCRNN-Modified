@@ -35,9 +35,11 @@ def masked_mae_tf(preds, labels, null_val=np.nan):
         mask = ~tf.is_nan(labels)
     else:
         mask = tf.not_equal(labels, null_val)
-    mask = tf.cast(mask, tf.float32)
+    mask = tf.cast(mask, tf.float64)
     mask /= tf.reduce_mean(mask)
     mask = tf.where(tf.is_nan(mask), tf.zeros_like(mask), mask)
+    labels = tf.cast(labels, tf.float64)
+    # print(f"sub: preds: {preds.dtype} labels: {labels.dtype}")
     loss = tf.abs(tf.subtract(preds, labels))
     loss = loss * mask
     loss = tf.where(tf.is_nan(loss), tf.zeros_like(loss), loss)
