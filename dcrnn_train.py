@@ -37,4 +37,5 @@ if __name__ == '__main__':
     parser.add_argument('--use_cpu_only', default=False, type=bool, help='Set to true to only use cpu.')
     args = parser.parse_args()
     tf.keras.backend.set_floatx('float64')
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     main(args)
